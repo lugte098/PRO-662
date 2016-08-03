@@ -1,0 +1,24 @@
+{
+  "name": "rss-feed-grid",
+  "authors": [
+    "Ivar Lugtenburg"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.6.1",
+    "paper-card": "PolymerElements/paper-card#^1.1.2",
+    "paper-input": "PolymerElements/paper-input#^1.1.17",
+    "google-feeds": "GoogleWebComponents/google-feeds#^1.0.2",
+    "paper-material": "PolymerElements/paper-material#^1.0.6",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1"
+  },
+  "devDependencies": {},
+  "description": "RSS Feed in a grid",
+  "main": "index.html",
+  "keywords": [
+    "rss",
+    "feed",
+    "grid"
+  ],
+  "license": "MIT",
+  "homepage": ""
+}

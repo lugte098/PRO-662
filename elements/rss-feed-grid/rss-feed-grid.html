@@ -1,0 +1,93 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/google-feeds/google-feeds.html">
+
+<dom-module id="rss-feed-grid">
+    <style is="custom-style">
+        body {
+            margin: 0;
+            font-family: 'Roboto', 'Noto', sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            background-color: #eee;
+        }
+
+        .container {
+            @apply(--layout-vertical);
+            @apply(--layout-center);
+        }
+
+        #input {
+            width: 300px;
+        }
+
+        #feed-info {
+            box-sizing: border-box;
+            margin: 4px;
+        }
+
+        #entries-container {
+            @apply(--layout-horizontal);
+            @apply(--layout-wrap);
+
+            width: 100%;
+
+            margin-top: 10px;
+            padding: 10px;
+
+            background-color: #eef;
+        }
+
+        .entry {
+            width: 32%;
+            margin-bottom: 20px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    </style>
+
+    <template>
+        <paper-card class="container">
+                <paper-input id="input" label="RSS feed url" value="{{feedurl}}" always-float-label></paper-input>
+
+                <google-feeds id="feedelement" feed="[[feedurl]]" results="{{result}}"></google-feeds>
+                <paper-card id="feed-info" heading="Feed info">
+                    <div class="card-content">
+                        <p>Feed title: <span>[[result.title]]</span></p>
+                        <p>Link: <span>[[result.link]]</span></p>
+                        <p>Description: <span>[[result.description]]</span></p>
+                    </div>
+                </paper-card>
+                <paper-material id="entries-container" elevation="2">
+                    <template is="dom-repeat" items="[[result.entries]]">
+                        <paper-card heading="Entry info" class="entry">
+                            <div class="card-content">
+                                <p>Title: <span>[[item.title]]</span></p>
+                                <p>Link: <span><a href="[[item.link]]">[[item.link]]</a></span></p>
+                                <p>Description: <span>[[item.description]]</span></p>
+                            </div>
+                        </paper-card>
+                    </template>
+                </paper-material>
+        </paper-card>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'rss-feed-grid',
+
+            properties: {
+                feedurl: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true,
+                    value: 'http://www.nu.nl/rss'
+                }
+            },
+        });
+    </script>
+</dom-module>
