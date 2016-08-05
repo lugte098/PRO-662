@@ -1,8 +1,15 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../bower_components/iron-scroll-target-behavior/iron-scroll-target-behavior.html">
+
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
 <link rel="import" href="../../bower_components/google-feeds/google-feeds.html">
 
 <dom-module id="rss-feed-grid">
@@ -29,31 +36,33 @@
             margin: 4px;
         }
 
-        #entries-container {
-            @apply(--layout-horizontal);
-            @apply(--layout-wrap);
-
+        #iron-list-container {
+            @apply(--layout-justified);
             width: 100%;
 
             margin-top: 10px;
-            padding: 10px;
 
-            background-color: #eef;
         }
 
-        .entry {
-            width: 32%;
+        .entry-container {
+            padding: 2px;
+        }
+
+        .iron-entry {
+            width: 550px;
+            height: 300px;
+
             margin-bottom: 20px;
-            margin-left: 10px;
+            margin-left: 50px;
             margin-right: 10px;
         }
     </style>
 
     <template>
-        <paper-card class="container">
+        <paper-material class="container" elevation="0">
                 <paper-input id="input" label="RSS feed url" value="{{feedurl}}" always-float-label></paper-input>
 
-                <google-feeds id="feedelement" feed="[[feedurl]]" results="{{result}}"></google-feeds>
+                <google-feeds id="feedelement" feed="[[feedurl]]" count="250" results="{{result}}"></google-feeds>
                 <paper-card id="feed-info" heading="Feed info">
                     <div class="card-content">
                         <p>Feed title: <span>[[result.title]]</span></p>
@@ -61,18 +70,24 @@
                         <p>Description: <span>[[result.description]]</span></p>
                     </div>
                 </paper-card>
-                <paper-material id="entries-container" elevation="2">
-                    <template is="dom-repeat" items="[[result.entries]]">
-                        <paper-card heading="Entry info" class="entry">
-                            <div class="card-content">
-                                <p>Title: <span>[[item.title]]</span></p>
-                                <p>Link: <span><a href="[[item.link]]">[[item.link]]</a></span></p>
-                                <p>Description: <span>[[item.description]]</span></p>
-                            </div>
-                        </paper-card>
+                <iron-scroll-threshold id="ironScrollThreshold" scroll-target="document" lower-threshold="200" lower-triggered="{{nearBottom}}" on-lower-threshold="_loadMoreData"></iron-scroll-threshold>
+                <iron-list id="iron-list-container" items="[[subResult.entries]]" grid>
+                    <template>
+                        <paper-material class="entry-container" elevation="0">
+                            <paper-card heading="Entry info #[[index]]" class="iron-entry">
+                                <div class="card-content">
+                                    <p>Title: <span>[[item.title]]</span></p>
+                                    <p>Link: <span><a href="[[item.link]]">[[item.link]]</a></span></p>
+                                    <p>Description: <span>[[item.description]]</span></p>
+                                </div>
+                            </paper-card>
+                        </paper-material>
                     </template>
-                </paper-material>
-        </paper-card>
+                </iron-list>
+                <div class="loadingIndicator" hidden$="[[!_isLoadNeeded(nearBottom)]]">
+                    <paper-spinner active$="[[_isLoadNeeded(nearBottom)]]"></paper-spinner> Fetching new entries
+                </div>
+        </paper-material>
     </template>
 
     <script>
@@ -86,8 +101,65 @@
                     reflectToAttribute: true,
                     notify: true,
                     value: 'http://www.nu.nl/rss'
+                },
+
+                result: {
+                    type: Object,
+                    observer: '_resultChanged',
+                    value: {"entries" : []}
+                },
+
+                count: {
+                    type: Number,
+                    value: 20
+                },
+
+                subResult: {
+                    type: Object,
+                    value: {"entries" : []}
+                },
+
+                nearBottom: {
+                    type: Boolean
                 }
             },
+
+            _resultChanged: function (newValue, oldValue) {
+                this._clearData();
+                this._refreshData();
+            },
+
+            _clearData: function () {
+                this.subResult = {"entries" : []};
+                this.count = 20;
+            },
+
+            _loadMoreData: function () {
+                console.log('loading more items');
+
+                if (this.result.entries.length > 0 && this.subResult.entries.length < this.result.entries.length) {
+                    this.count += 10;
+
+                    this.async(function () {
+                        this._refreshData();
+                    }, 2000);
+                }
+            },
+
+            _refreshData: function () {
+                if (this.result !== undefined && this.subResult !== undefined) {
+
+                    for (i = this.subResult.entries.length; i < this.count; i++) {
+                        this.push('subResult.entries', this.result.entries[i]);
+                    }
+                    document.querySelector('iron-list').notifyResize();
+                }
+                ironScrollThreshold.clearTriggers();
+            },
+
+            _isLoadNeeded: function () {
+                return this.nearBottom && this.subResult.entries.length < this.result.entries.length;
+            }
         });
     </script>
 </dom-module>
